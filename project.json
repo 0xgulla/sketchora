@@ -1,0 +1,28 @@
+{
+  "overview": "Sketchora is a professional Web3 drawing app on Arc Testnet featuring a premium notification system, smooth transaction UX, and a fully redesigned user guide — making Web3 drawing feel effortless and next-gen.",
+  "features": [
+    "Global toast notification system with glassmorphism + neon glow",
+    "Smart notifications for wallet, transactions, network, and actions",
+    "OKX wallet detection and recommendation",
+    "Persistent transaction processing UI with animated loader",
+    "Completely rewritten 5-section user guide",
+    "Arc Testnet branding badge and premium visual enhancements",
+    "Animated grid + floating particles background",
+    "Micro-interactions: button glow, click bounce, smooth transitions",
+    "Prevent duplicate transaction clicks with UI lock",
+    "Retry button on transaction failure"
+  ],
+  "category": "web3-creative-tools",
+  "tags": [
+    "web3",
+    "drawing",
+    "arc-testnet",
+    "usdc",
+    "notifications",
+    "glassmorphism",
+    "wallet",
+    "nft",
+    "canvas"
+  ],
+  "last_updated": "2026-05-05T17:58:37.905Z"
+}
