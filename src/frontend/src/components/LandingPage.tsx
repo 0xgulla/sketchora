@@ -7,6 +7,7 @@ import { useWeb3Auth } from "../hooks/useWeb3Auth";
 import { Notifications } from "../lib/notifications";
 import { checkPaidAccess } from "../lib/usdcPayment";
 import { isOKXWallet } from "../lib/walletDetection";
+import ConnectWalletPreModal from "./ConnectWalletPreModal";
 import DisconnectConfirmModal from "./DisconnectConfirmModal";
 import NewCanvasModal, { type CanvasConfig } from "./NewCanvasModal";
 import TransactionModal from "./TransactionModal";
@@ -132,13 +133,19 @@ function truncateAddress(addr: string): string {
 function WalletNavButton({
   isAuthenticated,
   onLogout,
+  onShowGuide,
 }: {
   isAuthenticated: boolean;
   onLogout: () => void;
+  onShowGuide: () => void;
 }) {
   const { address } = useAccount();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [showPreModal, setShowPreModal] = useState(false);
+  const [pendingOpenConnect, setPendingOpenConnect] = useState<
+    (() => void) | null
+  >(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleDisconnect = () => {
@@ -151,6 +158,20 @@ function WalletNavButton({
     onLogout();
   };
 
+  const handleUnderstand = () => {
+    setShowPreModal(false);
+    if (pendingOpenConnect) {
+      pendingOpenConnect();
+      setPendingOpenConnect(null);
+    }
+  };
+
+  const handleReadGuide = () => {
+    setShowPreModal(false);
+    setPendingOpenConnect(null);
+    onShowGuide();
+  };
+
   if (!isAuthenticated) {
     return (
       <>
@@ -160,7 +181,10 @@ function WalletNavButton({
               type="button"
               data-ocid="nav.login_button"
               className="btn-glow"
-              onClick={openConnectModal}
+              onClick={() => {
+                setShowPreModal(true);
+                setPendingOpenConnect(() => openConnectModal);
+              }}
               style={{
                 background: "linear-gradient(135deg,#8b5cf6,#6d28d9)",
                 color: "#fff",
@@ -196,6 +220,16 @@ function WalletNavButton({
             </button>
           )}
         </ConnectButton.Custom>
+
+        <ConnectWalletPreModal
+          isOpen={showPreModal}
+          onUnderstand={handleUnderstand}
+          onReadGuide={handleReadGuide}
+          onClose={() => {
+            setShowPreModal(false);
+            setPendingOpenConnect(null);
+          }}
+        />
       </>
     );
   }
@@ -279,7 +313,89 @@ function WalletNavButton({
   );
 }
 
-/* ─── Main Landing Page ───────────────────────────────────────── */
+/* ─── Hero Connect Button (with Pre-Modal) ───────────── */
+function HeroConnectButton({
+  onShowGuide,
+  purpleBtn,
+}: {
+  onShowGuide: () => void;
+  purpleBtn: React.CSSProperties;
+}) {
+  const [showPreModal, setShowPreModal] = useState(false);
+  const [pendingOpenConnect, setPendingOpenConnect] = useState<
+    (() => void) | null
+  >(null);
+
+  const handleUnderstand = () => {
+    setShowPreModal(false);
+    if (pendingOpenConnect) {
+      pendingOpenConnect();
+      setPendingOpenConnect(null);
+    }
+  };
+
+  const handleReadGuide = () => {
+    setShowPreModal(false);
+    setPendingOpenConnect(null);
+    onShowGuide();
+  };
+
+  return (
+    <>
+      <ConnectButton.Custom>
+        {({ openConnectModal }) => (
+          <button
+            type="button"
+            data-ocid="hero.primary_button"
+            className="btn-glow"
+            onClick={() => {
+              setShowPreModal(true);
+              setPendingOpenConnect(() => openConnectModal);
+            }}
+            style={{
+              ...purpleBtn,
+              padding: "16px 44px",
+              fontSize: 17,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              animation: "glowPulse 2.5s 1s ease-in-out infinite",
+              fontFamily: "inherit",
+            }}
+          >
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+              <line x1="1" y1="10" x2="23" y2="10" />
+            </svg>
+            Connect Wallet to Draw
+          </button>
+        )}
+      </ConnectButton.Custom>
+
+      <ConnectWalletPreModal
+        isOpen={showPreModal}
+        onUnderstand={handleUnderstand}
+        onReadGuide={handleReadGuide}
+        onClose={() => {
+          setShowPreModal(false);
+          setPendingOpenConnect(null);
+        }}
+      />
+    </>
+  );
+}
+
+/* ─── Main Landing Page ──────────────────────────────────────── */
 export default function LandingPage({
   onLaunchApp,
   onShowGuide = () => {},
@@ -1023,6 +1139,7 @@ export default function LandingPage({
           <WalletNavButton
             isAuthenticated={isAuthenticated}
             onLogout={onLogout}
+            onShowGuide={onShowGuide}
           />
           {isAuthenticated && (
             <button
@@ -1302,42 +1419,10 @@ export default function LandingPage({
                 {isPending ? "Processing..." : "Start Drawing"}
               </button>
             ) : (
-              <ConnectButton.Custom>
-                {({ openConnectModal }) => (
-                  <button
-                    type="button"
-                    data-ocid="hero.primary_button"
-                    className="btn-glow"
-                    onClick={openConnectModal}
-                    style={{
-                      ...purpleBtn,
-                      padding: "16px 44px",
-                      fontSize: 17,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      animation: "glowPulse 2.5s 1s ease-in-out infinite",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <svg
-                      aria-hidden="true"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                      <line x1="1" y1="10" x2="23" y2="10" />
-                    </svg>
-                    Connect Wallet to Draw
-                  </button>
-                )}
-              </ConnectButton.Custom>
+              <HeroConnectButton
+                onShowGuide={onShowGuide}
+                purpleBtn={purpleBtn}
+              />
             )}
 
             <button
